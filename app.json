@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "welcome",
-    "slug": "welcome",
+    "name": "PixelPursuit",
+    "slug": "PixelPursuit",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "welcome",
+    "scheme": "PixelPursuit",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -33,7 +33,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
