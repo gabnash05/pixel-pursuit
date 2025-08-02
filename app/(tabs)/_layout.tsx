@@ -16,33 +16,33 @@ export default function TabLayout() {
                 },
             }}
         >
-        <Tabs.Screen
-            name="index"
-            options={{
-                title: 'Scan',
-                tabBarIcon: ({ color }) => (
-                    <MaterialIcons name="qr-code-scanner" size={24} color={color} />
-                ),
-            }}
-        />
-        <Tabs.Screen
-            name="leaderboard"
-            options={{
-                title: 'Leaderboard',
-                tabBarIcon: ({ color }) => (
-                    <FontAwesome name="trophy" size={24} color={color} />
-                ),
-            }}
-        />
-        <Tabs.Screen
-            name="profile"
-            options={{
-                title: 'Profile',
-                tabBarIcon: ({ color }) => (
-                    <FontAwesome name="user" size={24} color={color} />
-                ),
-            }}
-        />
+            <Tabs.Screen
+                name="index"
+                options={{
+                    title: 'Scan',
+                    tabBarIcon: ({ color }) => (
+                        <MaterialIcons name="qr-code-scanner" size={24} color={color} />
+                    ),
+                }}
+            />
+            <Tabs.Screen
+                name="leaderboard"
+                options={{
+                    title: 'Leaderboard',
+                    tabBarIcon: ({ color }) => (
+                        <FontAwesome name="trophy" size={24} color={color} />
+                    ),
+                }}
+            />
+            <Tabs.Screen
+                name="profile"
+                options={{
+                    title: 'Profile',
+                    tabBarIcon: ({ color }) => (
+                        <FontAwesome name="user" size={24} color={color} />
+                    ),
+                }}
+            />
         </Tabs>
     );
 }

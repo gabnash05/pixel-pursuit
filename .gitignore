@@ -34,7 +34,7 @@ npm-debug.*
 yarn-debug.*
 yarn-error.*
 .idea/
-.vscode/*
+.vscode/
 *.swp
 
 ### macOS ###

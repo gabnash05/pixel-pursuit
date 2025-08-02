@@ -26,22 +26,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     useEffect(() => {
         const loadToken = async () => {
-        try {
-            const storedToken = await SecureStore.getItemAsync('authToken');
-            if (storedToken) {
-                setToken(storedToken);
-                // Redirect to home if token exists
-                router.replace('/(tabs)');
+            try {
+                const storedToken = await SecureStore.getItemAsync('authToken');
+                if (storedToken) {
+                    setToken(storedToken);
+                    // Redirect to home if token exists
+                    router.replace('/(tabs)');
+                }
+            } catch (error) {
+                console.error('Failed to load token', error);
+            } finally {
+                setIsLoading(false);
             }
-        } catch (error) {
-            console.error('Failed to load token', error);
-        } finally {
-            setIsLoading(false);
-        }
         };
 
         loadToken();
-  }, []);
+    }, []);
 
     const login = async (email: string, password: string) => {
         try {
@@ -75,7 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             const response = await fetch('YOUR_API_URL/register', {
                 method: 'POST',
                 headers: {
-                'Content-Type': 'application/json',
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ email, password, username }),
             });
