@@ -1,6 +1,6 @@
 import { View, Text } from 'react-native';
 
-import { truncateUsername } from '@/utils/usernames';
+import { truncateUsername } from '@/utils/formatText';
 
 interface UserRankCardProps {
     rank: number;

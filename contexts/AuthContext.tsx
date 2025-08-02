@@ -2,8 +2,15 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { router } from 'expo-router';
 
+// Define the structure for the user object
+interface User {
+    username: string;
+}
+
+// Define the new AuthContext type
 interface AuthContextType {
     token: string | null;
+    user: User | null; // Added user object
     isLoading: boolean;
     login: (email: string, password: string) => Promise<void>;
     register: (email: string, password: string, username: string) => Promise<void>;
@@ -12,6 +19,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType>({
     token: null,
+    user: null, // Initial value for user
     isLoading: true,
     login: async () => {},
     register: async () => {},
@@ -22,25 +30,29 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [token, setToken] = useState<string | null>(null);
+    const [user, setUser] = useState<User | null>(null); // New state for user
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const loadToken = async () => {
+        const loadAuthData = async () => {
             try {
-                const storedToken = await SecureStore.getItemAsync('authToken');
-                if (storedToken) {
-                    setToken(storedToken);
-                    // Redirect to home if token exists
+                // Get both token and user data from SecureStore
+                const storedAuthData = await SecureStore.getItemAsync('authData');
+                if (storedAuthData) {
+                    const data = JSON.parse(storedAuthData);
+                    setToken(data.token);
+                    setUser(data.user);
+                    // Redirect to home if auth data exists
                     router.replace('/(tabs)');
                 }
             } catch (error) {
-                console.error('Failed to load token', error);
+                console.error('Failed to load auth data', error);
             } finally {
                 setIsLoading(false);
             }
         };
 
-        loadToken();
+        loadAuthData();
     }, []);
 
     const login = async (email: string, password: string) => {
@@ -57,8 +69,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             const data = await response.json();
 
             if (response.ok) {
-                await SecureStore.setItemAsync('authToken', data.token);
-                setToken(data.token);
+                const authData = {
+                    token: data.token,
+                    user: { username: data.username }, // Assuming API returns 'username'
+                };
+                
+                await SecureStore.setItemAsync('authData', JSON.stringify(authData));
+                setToken(authData.token);
+                setUser(authData.user);
                 router.replace('/(tabs)');
             } else {
                 throw new Error(data.message || 'Login failed');
@@ -83,8 +101,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             const data = await response.json();
 
             if (response.ok) {
-                await SecureStore.setItemAsync('authToken', data.token);
-                setToken(data.token);
+                 const authData = {
+                    token: data.token,
+                    user: { username: data.username }, // Assuming API returns 'username'
+                };
+
+                await SecureStore.setItemAsync('authData', JSON.stringify(authData));
+                setToken(authData.token);
+                setUser(authData.user);
                 router.replace('/(tabs)');
             } else {
                 throw new Error(data.message || 'Registration failed');
@@ -97,8 +121,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const logout = async () => {
         try {
-            await SecureStore.deleteItemAsync('authToken');
+            await SecureStore.deleteItemAsync('authData'); // Delete the single auth data key
             setToken(null);
+            setUser(null); // Clear the user state
             router.replace('/(auth)/login');
         } catch (error) {
             console.error('Logout error:', error);
@@ -106,7 +131,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ token, isLoading, login, register, logout }}>
+        <AuthContext.Provider value={{ token, user, isLoading, login, register, logout }}>
             {children}
         </AuthContext.Provider>
     );

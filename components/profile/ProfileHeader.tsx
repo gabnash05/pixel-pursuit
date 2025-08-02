@@ -1,6 +1,8 @@
 import { View, Text, Image } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+
 import { Colors } from '../../constants/colors';
+import { truncateUsername } from '@/utils/formatText';
 
 export default function ProfileHeader({ 
     username, 
@@ -19,17 +21,17 @@ export default function ProfileHeader({
                 </View>
             </View>
             
-            <Text className="text-white text-xl font-bold mb-1">{username}</Text>
+            <Text className="text-white text-4xl font-josefin-bold mb-1">{truncateUsername(username)}</Text>
             
-            <View className="flex-row space-x-6 mt-4">
+            <View className="flex-row space-x-6 mt-4 gap-10">
                 <View className="items-center">
-                    <Text className="text-white text-2xl font-bold">{points}</Text>
-                    <Text className="text-indigo-200 text-sm">Points</Text>
+                    <Text className="text-white text-3xl font-josefin-bold">{points}</Text>
+                    <Text className="text-indigo-200 text-md font-josefin-regular">Points</Text>
                 </View>
                 
                 <View className="items-center">
-                    <Text className="text-white text-2xl font-bold">{scansCount}</Text>
-                    <Text className="text-indigo-200 text-sm">Scans</Text>
+                    <Text className="text-white text-3xl font-josefin-bold">{scansCount}</Text>
+                    <Text className="text-indigo-200 text-md font-josefin-regular">Scans</Text>
                 </View>
             </View>
         </View>

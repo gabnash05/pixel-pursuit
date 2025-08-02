@@ -2,7 +2,7 @@ import { View, Text } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 
 import { Colors } from '../../constants/colors';
-import { truncateUsername } from '../../utils/usernames';
+import { truncateUsername } from '../../utils/formatText';
 
 interface LeaderboardItemProps {
     item: {
