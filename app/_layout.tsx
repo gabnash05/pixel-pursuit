@@ -4,7 +4,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View } from 'react-native';
 import 'react-native-reanimated';
-
+import ErrorBoundary from '@/components/ErrorBoundary';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 
@@ -32,8 +32,7 @@ function AuthLayout() {
     return (
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
             <Stack>
-                {/* TODO: replace token with !token*/}
-                {token ? (
+                {!token ? (
                     <Stack.Screen name="(auth)" options={{ headerShown: false }} />
                 ) : (
                     <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -48,7 +47,9 @@ function AuthLayout() {
 export default function RootLayout() {
     return (
         <AuthProvider>
-            <AuthLayout />
+            <ErrorBoundary>
+                <AuthLayout />
+            </ErrorBoundary>
         </AuthProvider>
     );
 }

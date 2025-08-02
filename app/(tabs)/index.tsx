@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { FontAwesome } from '@expo/vector-icons';
 import { Colors } from '../../constants/colors';
 import * as Haptics from 'expo-haptics';
+import ErrorBoundary from '../../components/ErrorBoundary';
 
 import PointsDisplay from '../../components/ui/PointsDisplay';
 import ScanResultModal from '../../components/ui/ScanResultModal';
