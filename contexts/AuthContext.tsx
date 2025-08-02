@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const login = async (email: string, password: string) => {
         try {
-            // Replace with actual API call
+            // TODO: Replace with actual API call
             const response = await fetch('YOUR_API_URL/login', {
                 method: 'POST',
                 headers: {
@@ -71,7 +71,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const register = async (email: string, password: string, username: string) => {
         try {
-            // Replace with actual API call
+            // TODO: Replace with actual API call
             const response = await fetch('YOUR_API_URL/register', {
                 method: 'POST',
                 headers: {
