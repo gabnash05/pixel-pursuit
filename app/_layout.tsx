@@ -13,7 +13,10 @@ function AuthLayout() {
     const colorScheme = useColorScheme();
 
     const [fontsLoaded] = useFonts({
-        SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+        'JosefinSans-Regular': require('../assets/fonts/JosefinSans-Regular.ttf'),
+        'JosefinSans-Bold': require('../assets/fonts/JosefinSans-Bold.ttf'),
+        'JosefinSans-Italic': require('../assets/fonts/JosefinSans-Italic.ttf'),
+        'JosefinSans-Medium': require('../assets/fonts/JosefinSans-Medium.ttf'),
     });
 
     const isLoading = !fontsLoaded || authLoading;
