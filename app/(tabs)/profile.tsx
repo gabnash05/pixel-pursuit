@@ -8,6 +8,7 @@ import ScanHistoryItem from '../../components/profile/ScanHistoryItem';
 import { Colors } from '../../constants/colors';
 import { useApiClient } from '@/hooks/useApiClient';
 import { truncateUsername } from '@/utils/formatText';
+import ErrorState from '@/components/profile/ErrorState';
 
 type ScanHistory = {
     id: string;
@@ -53,7 +54,7 @@ export default function ProfileScreen() {
     const handleLogout = async () => {
         await logout();
     };
-
+    
     if (isLoading) {
         return (
             <View className="flex-1 items-center justify-center bg-gray-50">
@@ -63,21 +64,7 @@ export default function ProfileScreen() {
     }
 
     if (error) {
-        return (
-            <View className="flex-1 items-center justify-center bg-gray-50 p-6 ">
-                <View className="bg-red-100 p-4 rounded-full mb-4">
-                    <FontAwesome name="exclamation-triangle" size={32} color={Colors.light.danger} />
-                </View>
-                <Text className="text-lg font-josefin-medium text-gray-800 mb-2">Error loading profile</Text>
-                <Text className="text-gray-500 text-center mb-6 font-josefin-regular">{error}</Text>
-                <TouchableOpacity
-                    className="bg-indigo-600 px-6 py-3 rounded-lg"
-                    onPress={fetchProfileData}
-                >
-                    <Text className="text-white font-josefin-medium">Try Again</Text>
-                </TouchableOpacity>
-            </View>
-        );
+        return <ErrorState onRetry={fetchProfileData} />;
     }
 
     return (
