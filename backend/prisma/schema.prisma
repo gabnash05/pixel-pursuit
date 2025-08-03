@@ -5,11 +5,38 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../generated/prisma"
+    provider    = "prisma-client-js"
+    output      = "../generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider    = "postgresql"
+    url         = env("DATABASE_URL")
+}
+
+model User {
+    id          String      @id @default(uuid())
+    email       String      @unique
+    password    String
+    username    String      @unique
+    scans       Scan[]
+    createdAt   DateTime    @default(now())
+}
+
+model Scan {
+    id          String      @id @default(uuid())
+    qrCode      String
+    points      Int
+    timestamp   DateTime    @default(now())
+    userId      String
+    user        User        @relation(fields: [userId], references: [id])
+}
+
+model QRCodes {
+    id          String      @id @default(uuid())
+    code        String      @unique
+    currPoints  Int
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt
+    scans       Scan[]
 }
