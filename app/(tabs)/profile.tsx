@@ -6,6 +6,8 @@ import ProfileHeader from '../../components/profile/ProfileHeader';
 import StatsCard from '../../components/profile/StatsCard';
 import ScanHistoryItem from '../../components/profile/ScanHistoryItem';
 import { Colors } from '../../constants/colors';
+import { useApiClient } from '@/hooks/useApiClient';
+import { truncateUsername } from '@/utils/formatText';
 
 type ScanHistory = {
     id: string;
@@ -15,6 +17,7 @@ type ScanHistory = {
 };
 
 type UserStats = {
+    username: string;
     totalPoints: number;
     totalScans: number;
     scanPointAverage: number;
@@ -22,7 +25,9 @@ type UserStats = {
 };
 
 export default function ProfileScreen() {
-    const { user, token, logout } = useAuth();
+    const { logout } = useAuth();
+    const api = useApiClient();
+
     const [stats, setStats] = useState<UserStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -30,46 +35,12 @@ export default function ProfileScreen() {
     const fetchProfileData = async () => {
         setError(null);
         setIsLoading(true);
-        
-        try {
-            // TODO: replace withactual API
-            // const response = await fetch('YOUR_API_URL/profile', {
-            //     headers: {
-            //         'Authorization': `Bearer ${token}`,
-            //     },
-            // });
-            
-            // const data = await response.json();
-            
-            // if (response.ok) {
-            //     setStats({
-            //         totalPoints: data.totalPoints || 0,
-            //         totalScans: data.totalScans || 0,
-            //         dailyAverage: data.dailyAverage || 0,
-            //         topLocation: data.topLocation || 'N/A',
-            //         recentScans: data.recentScans || [],
-            //     });
-            // } else {
-            //     throw new Error(data.message || 'Failed to load profile data');
-            // }
-            // Mock data for demonstration
-            setStats({
-                totalPoints: 1500,
-                totalScans: 25,
-                scanPointAverage: 60.24,
-                recentScans: [
-                    { id: '1', points: 100, timestamp: '2023-10-01 12:00'},
-                    { id: '2', points: 200, timestamp: '2023-10-02 14:30'},
-                    { id: '3', points: 150, timestamp: '2023-10-03 16:45'},
-                ],
-            });
 
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                setError(error.message);
-            } else {
-                setError('An unexpected error occurred');
-            }
+        try {
+            const data = await api.getProfile();
+            setStats(data);
+        } catch (err: any) {
+            setError(err.message);
         } finally {
             setIsLoading(false);
         }
@@ -114,8 +85,7 @@ export default function ProfileScreen() {
             {stats && (
                 <>
                     <ProfileHeader 
-                        //username={user?.username!}
-                        username='Dave'
+                        username={truncateUsername(stats.username)}
                         points={stats.totalPoints}
                         scansCount={stats.totalScans}
                     />

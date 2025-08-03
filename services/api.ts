@@ -1,3 +1,4 @@
+// services/api.ts
 import axios from 'axios';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
@@ -12,7 +13,7 @@ export const createApiClient = (token?: string) => {
         baseURL: API_BASE_URL,
         headers: {
             'Content-Type': 'application/json',
-            ...(token && { Authorization: `Bearer ${token}` })
+            ...(token && { Authorization: `Bearer ${token}` }),
         },
     });
 
@@ -39,18 +40,41 @@ export const createApiClient = (token?: string) => {
 
     return {
         submitScan: (qrCode: string) =>
-            fetchWithAuth('POST', '/scans', { qrCode }),
+            fetchWithAuth<{ pointsEarned: number }>('POST', '/scans', { qrCode }),
 
-        getProfile: () => fetchWithAuth('GET', '/profile'),
+        getProfile: () =>
+            fetchWithAuth<{
+                username: string;
+                totalPoints: number;
+                totalScans: number;
+                scanPointAverage: number;
+                recentScans: {
+                    id: string;
+                    points: number;
+                    timestamp: string;
+                }[];
+            }>('GET', '/profile'),
 
         updateProfile: (username: string) =>
             fetchWithAuth('PATCH', '/profile', { username }),
 
-        getLeaderboard: (timeRange: 'all' | 'weekly' | 'daily') =>
-            fetchWithAuth('GET', `/leaderboard?time=${timeRange}`),
+        getLeaderboard: () =>
+            fetchWithAuth<{
+                entries: {
+                    id: string;
+                    username: string;
+                    points: number;
+                    rank: number;
+                    isCurrentUser: boolean;
+                }[];
+                currentUserRank: number;
+            }>('GET', `/leaderboard`),
 
         getScanDetails: (qrCodeId: string) =>
             fetchWithAuth('GET', `/scans/${qrCodeId}`),
+
+        getPoints: () =>
+            fetchWithAuth<{ points: number }>('GET', '/user/points'),
     };
 };
 

@@ -5,13 +5,14 @@ import { useAuth } from '../../contexts/AuthContext';
 import { FontAwesome } from '@expo/vector-icons';
 import { Colors } from '../../constants/colors';
 import * as Haptics from 'expo-haptics';
-import ErrorBoundary from '../../components/ErrorBoundary';
 
 import PointsDisplay from '../../components/ui/PointsDisplay';
 import ScanResultModal from '../../components/ui/ScanResultModal';
+import { useApiClient } from '@/hooks/useApiClient';
 
 export default function ScanScreen() {
     const { token } = useAuth();
+    const api = useApiClient();
     const [permission, requestPermission] = useCameraPermissions();
     const [scanned, setScanned] = useState(false);
     const [cameraType, setCameraType] = useState<CameraType>('back');
@@ -24,24 +25,14 @@ export default function ScanScreen() {
     useEffect(() => {
         const fetchPoints = async () => {
             try {
-                // TODO: Replace with actual API call
-                const response = await fetch('YOUR_API_URL/user/points', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
-                });
-                const data = await response.json();
-                if (response.ok) {
-                    setPoints(data.points);
-                }
+                const res = await api.getPoints();
+                setPoints(res.points);
             } catch (error) {
                 console.error('Failed to fetch points', error);
             }
         };
 
-        if (token) {
-            fetchPoints();
-        }
+        if (token) fetchPoints();
     }, [token]);
 
     if (!permission) {
@@ -72,38 +63,19 @@ export default function ScanScreen() {
         if (scanned) return;
         setScanned(true);
         setIsProcessing(true);
-        
+
         try {
             await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            const result = await api.submitScan(data);
 
-            // TODO: Replace with actual API call to process the scanned QR code
-            const response = await fetch('YOUR_API_URL/scan', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({ qrCode: data }),
-            });
+            setPoints(prev => prev + result.pointsEarned);
+            setLastScanPoints(result.pointsEarned);
+            setShowResultModal(true);
 
-            const result = await response.json();
-
-            if (response.ok) {
-                setPoints(prev => prev + result.pointsEarned);
-                setLastScanPoints(result.pointsEarned);
-                setShowResultModal(true);
-                
-                // Reset scanning after 2 seconds
-                setTimeout(() => {
-                setScanned(false);
-                }, 2000);
-            } else {
-                Alert.alert('Scan Failed', result.message || 'Could not process QR code');
-                setScanned(false);
-            }
-        } catch (error) {
+            setTimeout(() => setScanned(false), 2000);
+        } catch (error: any) {
             console.error('Scan error:', error);
-            Alert.alert('Error', 'Failed to process QR code');
+            Alert.alert('Error', error.message || 'Failed to process QR code');
             setScanned(false);
         } finally {
             setIsProcessing(false);
