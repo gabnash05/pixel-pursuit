@@ -14,7 +14,7 @@ export default function ErrorState({
     description = "There was an error fetching your profile data. Please try again."
 }: ErrorStateProps) {
     return (
-        <View className="flex-1 items-center justify-center p-6 bg-gray-50">
+        <View className="flex-1 items-center justify-center p-6">
             <View className="bg-red-100 p-4 rounded-full mb-4">
                 <FontAwesome 
                     name="exclamation-triangle" 
@@ -32,7 +32,7 @@ export default function ErrorState({
                 className="bg-indigo-600 px-6 py-3 rounded-lg"
                 onPress={onRetry}
             >
-                <Text className="text-white font-josefin-medium">Try Again</Text>
+                <Text className="text-white font-josefin-medium">Retry</Text>
             </TouchableOpacity>
         </View>
     );

@@ -16,10 +16,10 @@ export default function ErrorState({ onRetry }: ErrorStateProps) {
                     color={Colors.light.danger} 
                 />
             </View>
-            <Text className="text-lg font-medium text-gray-800 mb-2">
+            <Text className="text-lg font-josefin-medium text-gray-800 mb-2">
                 Failed to load leaderboard
             </Text>
-            <Text className="text-gray-500 text-center mb-6">
+            <Text className="text-gray-500 text-center mb-6 font-josefin-regular">
                 There was an error fetching the leaderboard data. 
                 Please try again.
             </Text>
@@ -27,7 +27,7 @@ export default function ErrorState({ onRetry }: ErrorStateProps) {
                 className="bg-indigo-600 px-6 py-3 rounded-lg"
                 onPress={onRetry}
             >
-                <Text className="text-white font-medium">Retry</Text>
+                <Text className="text-white font-josefin-medium">Retry</Text>
             </TouchableOpacity>
         </View>
     );
