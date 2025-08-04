@@ -13,30 +13,40 @@ datasource db {
     provider    = "postgresql"
     url         = env("DATABASE_URL")
 }
-
+ 
 model User {
-    id          String      @id @default(uuid())
-    email       String      @unique
-    password    String
-    username    String      @unique
-    scans       Scan[]
-    createdAt   DateTime    @default(now())
+    id              String      @id @default(uuid())
+    email           String      @unique
+    password        String
+    username        String      @unique
+    totalPoints     Int       @default(0)
+    scans           Scan[]
+    createdAt       DateTime    @default(now())
+    updatedAt       DateTime    @updatedAt
+    @@map("users")
 }
 
 model Scan {
-    id          String      @id @default(uuid())
-    qrCode      String
-    points      Int
-    timestamp   DateTime    @default(now())
-    userId      String
-    user        User        @relation(fields: [userId], references: [id])
+    id              String      @id @default(uuid())
+    qrCode          String
+    qrCodeId        String
+    pointsEarned    Int         // Points actually earned in this scan
+    timestamp       DateTime    @default(now())
+    userId          String
+    user            User        @relation(fields: [userId], references: [id])
+    qrCodeData      QRCodes     @relation(fields: [qrCodeId], references: [id])
+    
+    @@unique([userId, qrCodeId]) // Prevent duplicate scans
+    @@map("scans")
 }
 
 model QRCodes {
-    id          String      @id @default(uuid())
-    code        String      @unique
-    currPoints  Int
-    createdAt   DateTime    @default(now())
-    updatedAt   DateTime    @updatedAt
-    scans       Scan[]
+    id              String     @id @default(uuid())
+    code            String     @unique
+    initialPoints   Int       // Starting points
+    currPoints      Int        // Current points available
+    scans           Scan[]
+    createdAt       DateTime   @default(now())
+    updatedAt       DateTime   @updatedAt
+    @@map("qr_codes")
 }
