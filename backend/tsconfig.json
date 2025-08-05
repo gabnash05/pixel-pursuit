@@ -43,6 +43,10 @@
         "moduleDetection": "force",
         "skipLibCheck": true,
         "esModuleInterop": true,
+
+        "paths": {
+            "@prisma/client": ["./generated/prisma/client"]
+        }
     },
     "ts-node": {
         "esm": true
