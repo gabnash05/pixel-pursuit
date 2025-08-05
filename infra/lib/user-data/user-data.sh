@@ -50,6 +50,6 @@ cd /opt/pixel-pursuit/backend && npx prisma generate && npx prisma migrate deplo
 # Install PM2 globally (requires sudo for global npm install)
 sudo npm install -g pm2
 cd /opt/pixel-pursuit/backend && npm run build
-pm2 start npm --name "pixel-pursuit" -- run dev
+pm2 start npm --name "pixel-pursuit" -- run start:prod
 pm2 save
 sudo pm2 startup systemd 

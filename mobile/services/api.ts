@@ -45,13 +45,16 @@ export const createApiClient = (token?: string) => {
         getProfile: () =>
             fetchWithAuth<{
                 username: string;
-                totalPoints: number;
-                totalScans: number;
-                scanPointAverage: number;
+                stats: {
+                    totalPoints: number;
+                    totalScans: number;
+                    averagePoints: number;
+                };
                 recentScans: {
                     id: string;
-                    points: number;
+                    pointsEarned: number;
                     timestamp: string;
+                    qrCode: string;
                 }[];
             }>('GET', '/profile'),
 

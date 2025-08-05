@@ -1,34 +1,36 @@
-import { useState, useEffect } from 'react';
-import { View, ScrollView, TouchableOpacity, ActivityIndicator , Text} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
+import { createApiClient } from '../../services/api';
+import { Colors } from '../../constants/colors';
 import ProfileHeader from '../../components/profile/ProfileHeader';
 import StatsCard from '../../components/profile/StatsCard';
 import ScanHistoryItem from '../../components/profile/ScanHistoryItem';
-import { Colors } from '../../constants/colors';
-import { useApiClient } from '@/hooks/useApiClient';
-import { truncateUsername } from '@/utils/formatText';
-import ErrorState from '@/components/profile/ErrorState';
+import ErrorState from '../../components/profile/ErrorState';
+import { truncateUsername } from '../../utils/formatText';
+
+const api = createApiClient();
 
 type ScanHistory = {
     id: string;
-    points: number;
+    pointsEarned: number;
     timestamp: string;
-    location?: string;
+    qrCode: string;
 };
 
 type UserStats = {
     username: string;
-    totalPoints: number;
-    totalScans: number;
-    scanPointAverage: number;
+    stats: {
+        totalPoints: number;
+        totalScans: number;
+        averagePoints: number;
+    };
     recentScans: ScanHistory[];
 };
 
 export default function ProfileScreen() {
     const { logout } = useAuth();
-    const api = useApiClient();
-
     const [stats, setStats] = useState<UserStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -73,8 +75,8 @@ export default function ProfileScreen() {
                 <>
                     <ProfileHeader 
                         username={truncateUsername(stats.username)}
-                        points={stats.totalPoints}
-                        scansCount={stats.totalScans}
+                        points={stats.stats.totalPoints}
+                        scansCount={stats.stats.totalScans}
                     />
                     
                     <View className="p-4">
@@ -83,7 +85,7 @@ export default function ProfileScreen() {
                             
                             <StatsCard 
                                 title="Scan Point Average" 
-                                value={stats.scanPointAverage}
+                                value={stats.stats.averagePoints}
                                 icon={
                                     <FontAwesome 
                                         name="line-chart" 
@@ -101,7 +103,7 @@ export default function ProfileScreen() {
                                 stats.recentScans.map((scan) => (
                                     <ScanHistoryItem
                                         key={scan.id}
-                                        points={scan.points}
+                                        points={scan.pointsEarned}
                                         timestamp={scan.timestamp}
                                     />
                                 ))
