@@ -1,6 +1,5 @@
 import type { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import type { User } from '../types/users/userTypes.js';
 
 const prisma = new PrismaClient();
 
@@ -13,7 +12,7 @@ export const getProfile = async (req: Request, res: Response) => {
             });
         }
 
-        const user: User | null = await prisma.user.findUnique({
+        const user = await prisma.user.findUnique({
             where: { 
                 id: req.user.userId 
             },
@@ -21,9 +20,9 @@ export const getProfile = async (req: Request, res: Response) => {
                 scans: {
                     select: {
                         id: true,
-                        points: true,
+                        pointsEarned: true,
                         timestamp: true,
-                        location: true
+                        qrCode: true
                     },
                     orderBy: {
                         timestamp: 'desc'
@@ -40,7 +39,7 @@ export const getProfile = async (req: Request, res: Response) => {
         }
 
         const totalPoints = user.scans.reduce(
-            (sum, scan) => sum + scan.points, 
+            (sum, scan) => sum + scan.pointsEarned, 
             0
         );
 
@@ -68,6 +67,50 @@ export const getProfile = async (req: Request, res: Response) => {
         return res.status(500).json({
             error: 'Internal Server Error',
             message: 'Failed to retrieve profile data',
+            details: process.env.NODE_ENV === 'development' 
+                ? (error instanceof Error ? error.message : String(error))
+                : undefined
+        });
+    }
+};
+
+export const getPoints = async (req: Request, res: Response) => {
+    try {
+        if (!req.user?.userId) {
+            return res.status(401).json({ 
+                error: 'Unauthorized',
+                message: 'User ID not found in request' 
+            });
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { 
+                id: req.user.userId 
+            },
+            select: {
+                totalPoints: true
+            }
+        });
+
+        if (!user) {
+            return res.status(404).json({ 
+                error: 'Not Found',
+                message: 'User not found in database' 
+            });
+        }
+
+        return res.status(200).json({
+            data: {
+                points: user.totalPoints
+            }
+        });
+
+    } catch (error) {
+        console.error('Get Points Error:', error);
+        
+        return res.status(500).json({
+            error: 'Internal Server Error',
+            message: 'Failed to retrieve user points',
             details: process.env.NODE_ENV === 'development' 
                 ? (error instanceof Error ? error.message : String(error))
                 : undefined

@@ -1,6 +1,5 @@
 import type { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import type { Scan } from '../types/scans/scanTypes.js';
 
 const prisma = new PrismaClient();
 
@@ -23,10 +22,22 @@ export const submitScan = async (req: Request, res: Response) => {
             });
         }
 
-        // Check for duplicate scans
+        // Get QR code record first to check if it exists and get its ID
+        const qrCodeRecord = await prisma.qRCodes.findUnique({
+            where: { code: qrCode }
+        });
+
+        if (!qrCodeRecord) {
+            return res.status(404).json({
+                error: 'Not Found',
+                message: 'QR code not registered in system'
+            });
+        }
+
+        // Check for duplicate scans using qrCodeId
         const existingScan = await prisma.scan.findFirst({
             where: { 
-                qrCode, 
+                qrCodeId: qrCodeRecord.id, 
                 userId: req.user.userId,
                 timestamp: {
                     gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // Within 24 hours
@@ -45,18 +56,6 @@ export const submitScan = async (req: Request, res: Response) => {
             });
         }
 
-        // Get current points value from QRCodes table
-        const qrCodeRecord = await prisma.qRCodes.findUnique({
-            where: { code: qrCode }
-        });
-
-        if (!qrCodeRecord) {
-            return res.status(404).json({
-                error: 'Not Found',
-                message: 'QR code not registered in system'
-            });
-        }
-
         // Calculate points with reduction formula
         const pointsEarned = qrCodeRecord.currPoints;
 
@@ -65,12 +64,13 @@ export const submitScan = async (req: Request, res: Response) => {
             prisma.scan.create({
                 data: { 
                     qrCode, 
-                    points: pointsEarned, 
+                    qrCodeId: qrCodeRecord.id,
+                    pointsEarned, 
                     userId: req.user.userId 
                 },
                 select: {
                     id: true,
-                    points: true,
+                    pointsEarned: true,
                     timestamp: true,
                     qrCode: true
                 }
@@ -101,7 +101,7 @@ export const submitScan = async (req: Request, res: Response) => {
             data: {
                 // TODO: Update this in frontend
                 message: 'Scan successfully recorded',
-                pointsEarned: newScan.points,
+                pointsEarned: newScan.pointsEarned,
                 scanId: newScan.id,
                 timestamp: newScan.timestamp,
                 remainingPoints: qrCodeRecord.currPoints - calculatePointsReduction(pointsEarned)

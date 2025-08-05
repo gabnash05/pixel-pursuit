@@ -1,23 +1,22 @@
 import type { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import type { LeaderboardResponse } from '../types/leaderboard/leaderboardTypes.js';
-import type { User } from '../types/users/userTypes.js';
 
 const prisma = new PrismaClient();
 
 export const getLeaderboard = async (req: Request, res: Response<LeaderboardResponse>) => {
     try {
         // 1. Get current user ID from auth (assuming it's in req.user)
-        const currentUserId = req.user?.id;
+        const currentUserId = req.user?.userId;
 
         // 2. Fetch all users with their scans
-        const users: User[] = await prisma.user.findMany({
+        const users = await prisma.user.findMany({
             select: {
                 id: true,
                 username: true,
                 scans: { 
                     select: { 
-                        points: true 
+                        pointsEarned: true 
                     } 
                 },
             },
@@ -27,7 +26,7 @@ export const getLeaderboard = async (req: Request, res: Response<LeaderboardResp
         const entriesWithPoints = users.map(user => ({
             id: user.id,
             username: user.username,
-            points: user.scans.reduce((acc, scan) => acc + scan.points, 0),
+            points: user.scans.reduce((acc, scan) => acc + scan.pointsEarned, 0),
             isCurrentUser: user.id === currentUserId,
         }));
 
