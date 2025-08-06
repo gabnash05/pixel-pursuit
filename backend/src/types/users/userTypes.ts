@@ -5,6 +5,7 @@ export interface User {
     email: string;
     password: string;
     username: string;
+    isAdmin: boolean;
     totalPoints: number;
     scans: Scan[];
     createdAt: Date;

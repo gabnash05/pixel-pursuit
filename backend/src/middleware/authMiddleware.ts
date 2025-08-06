@@ -13,3 +13,15 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
         return res.status(403).json({ error: 'Invalid token' });
     }
 };
+
+// New middleware for admin check
+export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user?.isAdmin) {
+        return res.status(403).json({ 
+            error: 'Forbidden', 
+            message: 'Admin access required',
+            code: 'ADMIN_ACCESS_REQUIRED'
+        });
+    }
+    next();
+};

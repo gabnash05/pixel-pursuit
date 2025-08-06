@@ -3,10 +3,14 @@ import { register, login } from '../controllers/authController.js';
 import { submitScan } from '../controllers/scanController.js';
 import { getLeaderboard } from '../controllers/leaderboardController.js';
 import { getProfile, getPoints } from '../controllers/profileController.js';
-import { authenticateToken } from '../middleware/authMiddleware.js';
+import { createAdminAccount, generateQrStrings } from '../controllers/adminController.js';
+
+import { authenticateToken, requireAdmin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
+router.post('/admin/create', createAdminAccount);
+router.post('/admin/generate-qr-strings', authenticateToken, requireAdmin, generateQrStrings);
 router.post('/auth/register', register);
 router.post('/auth/login', login);
 router.post('/scans', authenticateToken, submitScan);

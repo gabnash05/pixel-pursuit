@@ -104,7 +104,7 @@ export const submitScan = async (req: Request, res: Response) => {
                 pointsEarned: newScan.pointsEarned,
                 scanId: newScan.id,
                 timestamp: newScan.timestamp,
-                remainingPoints: qrCodeRecord.currPoints - calculatePointsReduction(pointsEarned)
+                remainingPoints: calculateReducedPoints(qrCodeRecord.currPoints)
             }
         });
 
@@ -127,10 +127,8 @@ function calculatePointsReduction(basePoints: number): number {
 }
 
 // Final points calculation with optional modifiers
-function calculateReducedPoints(basePoints: number, qrCode: string): number {
+function calculateReducedPoints(basePoints: number): number {
     const reducedPoints = basePoints - calculatePointsReduction(basePoints);
     // Apply any additional modifiers
-    return qrCode.startsWith('PREMIUM_') 
-        ? Math.floor(reducedPoints * 1.5) // 50% bonus for premium codes
-        : reducedPoints;
+    return 0;
 }

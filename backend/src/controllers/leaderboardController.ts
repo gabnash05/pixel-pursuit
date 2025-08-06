@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import type { LeaderboardResponse } from '../types/leaderboard/leaderboardTypes.js';
+import type { User } from '../types/users/userTypes.js';
 
 const prisma = new PrismaClient();
 
@@ -23,7 +24,7 @@ export const getLeaderboard = async (req: Request, res: Response<LeaderboardResp
         });
 
         // 3. Calculate points and create entries
-        const entriesWithPoints = users.map(user => ({
+        const entriesWithPoints = users.map((user: User) => ({
             id: user.id,
             username: user.username,
             points: user.scans.reduce((acc, scan) => acc + scan.pointsEarned, 0),
@@ -47,8 +48,8 @@ export const getLeaderboard = async (req: Request, res: Response<LeaderboardResp
 
         // 8. Send response
         res.json({
-        entries: topEntries,
-        currentUserRank,
+            entries: topEntries,
+            currentUserRank,
         });
 
     } catch (error) {

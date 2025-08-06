@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# Simplified Pixel Pursuit Backend Setup
-# Maintains core functionality with less complexity
+#Pixel Pursuit Backend Setup
 
 set -euo pipefail  # Basic error handling
 
@@ -20,7 +19,7 @@ log() {
 # Update system and install dependencies
 log "INFO" "Updating system packages"
 sudo apt-get update -y
-sudo apt-get install -y curl git postgresql-client jq
+sudo apt-get install -y curl unzip git postgresql-client jq
 
 # Install Node.js 22.x
 log "INFO" "Installing Node.js"
@@ -43,7 +42,7 @@ git clone https://github.com/gabnash05/pixel-pursuit.git "$APP_DIR"
 # Install dependencies
 log "INFO" "Installing dependencies"
 cd "$BACKEND_DIR"
-npm ci --only=production
+npm install
 
 # Configure environment
 log "INFO" "Configuring environment"
@@ -55,13 +54,43 @@ cat > .env << EOF
 DATABASE_URL=postgresql://${db_user}:${db_pass}@${DB_ENDPOINT}:5432/pixelpursuit
 PORT=80
 JWT_SECRET=$(openssl rand -hex 32)
-NODE_ENV=production
+NODE_ENV=development
 EOF
 
-# Setup database
+# Build the application
+log "INFO" "Building application"
+npm run build
+
+# Database setup with retries
 log "INFO" "Setting up database"
-npx prisma generate
-npx prisma migrate deploy
+max_retries=5
+retry_delay=5
+
+for ((i=1; i<=max_retries; i++)); do
+    log "INFO" "Attempt $i to setup database..."
+    
+    # Generate Prisma client
+    if npx prisma generate; then
+        log "INFO" "Prisma client generated successfully"
+    else
+        log "WARNING" "Failed to generate Prisma client"
+        sleep $retry_delay
+        continue
+    fi
+    
+    # Apply migrations
+    if npx prisma migrate deploy; then
+        log "INFO" "Migrations applied successfully"
+        break
+    else
+        log "WARNING" "Migration attempt $i failed"
+        if [ $i -eq $max_retries ]; then
+            log "ERROR" "All migration attempts failed"
+            exit 1
+        fi
+        sleep $retry_delay
+    fi
+done
 
 # Start application
 log "INFO" "Starting application"
