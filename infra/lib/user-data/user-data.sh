@@ -54,43 +54,18 @@ cat > .env << EOF
 DATABASE_URL=postgresql://${db_user}:${db_pass}@${DB_ENDPOINT}:5432/pixelpursuit
 PORT=80
 JWT_SECRET=$(openssl rand -hex 32)
+SUPER_ADMIN_SECRET=your-very-strong-random-secret
 NODE_ENV=development
 EOF
-
+ 
 # Build the application
 log "INFO" "Building application"
 npm run build
 
-# Database setup with retries
+# Setup database
 log "INFO" "Setting up database"
-max_retries=5
-retry_delay=5
-
-for ((i=1; i<=max_retries; i++)); do
-    log "INFO" "Attempt $i to setup database..."
-    
-    # Generate Prisma client
-    if npx prisma generate; then
-        log "INFO" "Prisma client generated successfully"
-    else
-        log "WARNING" "Failed to generate Prisma client"
-        sleep $retry_delay
-        continue
-    fi
-    
-    # Apply migrations
-    if npx prisma migrate deploy; then
-        log "INFO" "Migrations applied successfully"
-        break
-    else
-        log "WARNING" "Migration attempt $i failed"
-        if [ $i -eq $max_retries ]; then
-            log "ERROR" "All migration attempts failed"
-            exit 1
-        fi
-        sleep $retry_delay
-    fi
-done
+npx prisma generate
+npx prisma migrate deploy
 
 # Start application
 log "INFO" "Starting application"

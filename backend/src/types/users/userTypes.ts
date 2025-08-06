@@ -7,7 +7,7 @@ export interface User {
     username: string;
     isAdmin: boolean;
     totalPoints: number;
-    scans: Scan[];
+    scans?: Scan[];
     createdAt: Date;
     updatedAt: Date;
 }

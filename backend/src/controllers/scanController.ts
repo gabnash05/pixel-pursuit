@@ -5,14 +5,6 @@ const prisma = new PrismaClient();
 
 export const submitScan = async (req: Request, res: Response) => {
     try {
-        // Validate request
-        if (!req.user?.userId) {
-            return res.status(401).json({
-                error: 'Unauthorized',
-                message: 'Authentication required'
-            });
-        }
-
         const { qrCode } = req.body;
 
         if (!qrCode || typeof qrCode !== 'string') {
@@ -22,7 +14,8 @@ export const submitScan = async (req: Request, res: Response) => {
             });
         }
 
-        // Get QR code record first to check if it exists and get its ID
+        const userId = req.user.userId;
+
         const qrCodeRecord = await prisma.qRCodes.findUnique({
             where: { code: qrCode }
         });
@@ -34,13 +27,12 @@ export const submitScan = async (req: Request, res: Response) => {
             });
         }
 
-        // Check for duplicate scans using qrCodeId
         const existingScan = await prisma.scan.findFirst({
-            where: { 
-                qrCodeId: qrCodeRecord.id, 
-                userId: req.user.userId,
+            where: {
+                qrCodeId: qrCodeRecord.id,
+                userId,
                 timestamp: {
-                    gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // Within 24 hours
+                    gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // 24-hour cooldown
                 }
             }
         });
@@ -56,39 +48,52 @@ export const submitScan = async (req: Request, res: Response) => {
             });
         }
 
-        // Calculate points with reduction formula
         const pointsEarned = qrCodeRecord.currPoints;
+        const pointsToDeduct = calculatePointsReduction(pointsEarned);
 
-        // Start transaction to ensure data consistency
+        // Create scan + update QR + update User in transaction
         const [newScan] = await prisma.$transaction([
             prisma.scan.create({
-                data: { 
-                    qrCode, 
+                data: {
+                    qrCodeString: qrCode,
                     qrCodeId: qrCodeRecord.id,
-                    pointsEarned, 
-                    userId: req.user.userId 
+                    pointsEarned,
+                    userId
                 },
                 select: {
                     id: true,
+                    qrCodeString: true,
                     pointsEarned: true,
                     timestamp: true,
-                    qrCode: true
+                    user: {
+                        select: {
+                            id: true,
+                            username: true,
+                            totalPoints: true
+                        }
+                    },
+                    qrCode: {
+                        select: {
+                            id: true,
+                            code: true,
+                            currPoints: true,
+                            initialPoints: true
+                        }
+                    }
                 }
             }),
-            
-            // Update QR code's current points
+
             prisma.qRCodes.update({
                 where: { code: qrCode },
                 data: {
                     currPoints: {
-                        decrement: calculatePointsReduction(pointsEarned)
+                        decrement: pointsToDeduct
                     }
                 }
             }),
-            
-            // Update user's total points
+
             prisma.user.update({
-                where: { id: req.user.userId },
+                where: { id: userId },
                 data: {
                     totalPoints: {
                         increment: pointsEarned
@@ -98,37 +103,37 @@ export const submitScan = async (req: Request, res: Response) => {
         ]);
 
         return res.status(201).json({
+            message: 'Scan successfully recorded',
             data: {
-                // TODO: Update this in frontend
-                message: 'Scan successfully recorded',
-                pointsEarned: newScan.pointsEarned,
                 scanId: newScan.id,
+                pointsEarned: newScan.pointsEarned,
                 timestamp: newScan.timestamp,
-                remainingPoints: calculateReducedPoints(qrCodeRecord.currPoints)
+                user: newScan.user,
+                qrCode: {
+                    ...newScan.qrCode,
+                    remainingPoints: calculateReducedPoints(newScan.qrCode.currPoints + pointsToDeduct)
+                }
             }
         });
 
     } catch (error) {
         console.error('Scan Submission Error:', error);
-        
+
         return res.status(500).json({
             error: 'Internal Server Error',
             message: 'Failed to process scan',
-            details: process.env.NODE_ENV === 'development' 
+            details: process.env.NODE_ENV === 'development'
                 ? (error instanceof Error ? error.message : String(error))
                 : undefined
         });
     }
 };
 
-// Point reduction formula (e.g., reduce by 10% each scan)
+// Point reduction formula
 function calculatePointsReduction(basePoints: number): number {
-    return Math.max(1, Math.floor(basePoints * 0.1)); // Never reduces below 1 point
+    return Math.max(1, Math.floor(basePoints * 0.1));
 }
 
-// Final points calculation with optional modifiers
 function calculateReducedPoints(basePoints: number): number {
-    const reducedPoints = basePoints - calculatePointsReduction(basePoints);
-    // Apply any additional modifiers
-    return 0;
+    return basePoints - calculatePointsReduction(basePoints);
 }

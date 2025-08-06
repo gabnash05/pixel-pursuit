@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import type { Scan } from '../types/scans/scanTypes';
 
 const prisma = new PrismaClient();
 
@@ -39,7 +40,7 @@ export const getProfile = async (req: Request, res: Response) => {
         }
 
         const totalPoints = user.scans.reduce(
-            (sum, scan) => sum + scan.pointsEarned, 
+            (sum: number, scan: Scan) => sum + scan.pointsEarned, 
             0
         );
 
