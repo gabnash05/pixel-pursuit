@@ -24,10 +24,14 @@ export const getLeaderboard = async (req: Request, res: Response<LeaderboardResp
         });
 
         // 3. Calculate points and create entries
-        const entriesWithPoints = users.map((user: User) => ({
+        const entriesWithPoints = users.map((user: { 
+            id: string; 
+            username: string; 
+            scans: { pointsEarned: number }[]; 
+        }) => ({
             id: user.id,
             username: user.username,
-            points: user.scans.reduce((acc, scan) => acc + scan.pointsEarned, 0),
+            points: user.scans.reduce((acc: number, scan: { pointsEarned: number }) => acc + scan.pointsEarned, 0),
             isCurrentUser: user.id === currentUserId,
         }));
 

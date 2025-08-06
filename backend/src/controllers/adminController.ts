@@ -45,8 +45,9 @@ export const generateQrStrings = async (req: Request, res: Response) => {
 
 export const createAdminAccount = async (req: Request, res: Response) => {
     try {
+        const { secret, email, password, username } = req.body;
+
         // 1. Verify super-admin secret (from environment variables)
-        const { secret, email, password } = req.body;
         if (secret !== process.env.SUPER_ADMIN_SECRET) {
             return res.status(403).json({ error: 'Invalid super admin secret' });
         }
@@ -64,6 +65,7 @@ export const createAdminAccount = async (req: Request, res: Response) => {
         const admin = await prisma.user.create({
             data: {
                 email,
+                username,
                 password: hashedPassword,
                 isAdmin: true
             }
