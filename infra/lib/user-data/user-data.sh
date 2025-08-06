@@ -1,118 +1,73 @@
 #!/bin/bash
-set -e
 
+# Simplified Pixel Pursuit Backend Setup
+# Maintains core functionality with less complexity
+
+set -euo pipefail  # Basic error handling
+
+# Configuration
 DB_SECRET_ARN="__DB_SECRET_ARN__"
 DB_ENDPOINT="__DB_ENDPOINT__"
+APP_DIR="/opt/pixel-pursuit"
+BACKEND_DIR="$APP_DIR/backend"
+LOG_FILE="/var/log/pixel-pursuit-setup.log"
 
-export HOME="/home/ubuntu"
-cd $HOME
+# Logging function
+log() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1: $2" | tee -a "$LOG_FILE"
+}
 
-# Update and install dependencies
+# Update system and install dependencies
+log "INFO" "Updating system packages"
 sudo apt-get update -y
-sudo apt-get install -y curl unzip git nodejs npm postgresql-client jq
+sudo apt-get install -y curl git postgresql-client jq
 
-# Install AWS CLI v2
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-unzip awscliv2.zip
-sudo ./aws/install 
+# Install Node.js 22.x
+log "INFO" "Installing Node.js"
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Install AWS CLI (v2)
+log "INFO" "Installing AWS CLI"
+curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o awscliv2.zip
+unzip -q awscliv2.zip
+sudo ./aws/install
 rm -rf awscliv2.zip aws
 
-# Install nvm and Node.js 20
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+# Setup application directory
+log "INFO" "Setting up application"
+sudo mkdir -p "$APP_DIR"
+sudo chown -R ubuntu:ubuntu "$APP_DIR"
+git clone https://github.com/gabnash05/pixel-pursuit.git "$APP_DIR"
 
-export NVM_DIR="$HOME/.nvm"
-mkdir -p $NVM_DIR
+# Install dependencies
+log "INFO" "Installing dependencies"
+cd "$BACKEND_DIR"
+npm ci --only=production
 
-cat <<EOF >> $HOME/.bashrc
-export NVM_DIR="$HOME/.nvm"
-[ -s "\$NVM_DIR/nvm.sh" ] && \. "\$NVM_DIR/nvm.sh"
-EOF
+# Configure environment
+log "INFO" "Configuring environment"
+secret_json=$(aws secretsmanager get-secret-value --secret-id "$DB_SECRET_ARN" --region ap-southeast-2 --query SecretString --output text)
+db_user=$(echo "$secret_json" | jq -r '.username')
+db_pass=$(echo "$secret_json" | jq -r '.password')
 
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-nvm install 20
-nvm use 20
-
-# Clone repo to /opt
-sudo mkdir -p /opt/pixel-pursuit
-sudo chown -R $USER:$USER /opt/pixel-pursuit  # Let current user write
-git clone https://github.com/gabnash05/pixel-pursuit.git /opt/pixel-pursuit
-cd /opt/pixel-pursuit/backend && npm install
-
-# Fetch RDS credentials (uses AWS CLI)
-SECRET_JSON=$(aws secretsmanager get-secret-value \
-    --secret-id "$DB_SECRET_ARN" \
-    --region ap-southeast-2 \
-    --query SecretString \
-    --output text)
-
-DB_USER=$(echo "$SECRET_JSON" | jq -r '.username')
-DB_PASS=$(echo "$SECRET_JSON" | jq -r '.password')
-
-# Write .env file
-cat <<EOF > /opt/pixel-pursuit/backend/.env
-DATABASE_URL=postgresql://$DB_USER:$DB_PASS@$DB_ENDPOINT:5432/pixelpursuit
+cat > .env << EOF
+DATABASE_URL=postgresql://${db_user}:${db_pass}@${DB_ENDPOINT}:5432/pixelpursuit
 PORT=80
 JWT_SECRET=$(openssl rand -hex 32)
 NODE_ENV=production
 EOF
 
-# Run Prisma migrations
-cd /opt/pixel-pursuit/backend
-echo "Generating Prisma client..."
+# Setup database
+log "INFO" "Setting up database"
 npx prisma generate
-echo "Running Prisma migrations..."
 npx prisma migrate deploy
 
-# Install PM2 globally (requires sudo for global npm install)
+# Start application
+log "INFO" "Starting application"
 sudo npm install -g pm2
-cd /opt/pixel-pursuit/backend && npm run build
-
-# Create PM2 ecosystem file
-cat <<EOF > /opt/pixel-pursuit/backend/ecosystem.config.js
-module.exports = {
-  apps: [{
-    name: 'pixel-pursuit',
-    script: 'dist/server.js',
-    cwd: '/opt/pixel-pursuit/backend',
-    instances: 1,
-    autorestart: true,
-    watch: false,
-    max_memory_restart: '1G',
-    env: {
-      NODE_ENV: 'production',
-      PORT: 80
-    },
-    env_file: '.env',
-    error_file: './logs/err.log',
-    out_file: './logs/out.log',
-    log_file: './logs/combined.log',
-    time: true,
-    log_date_format: 'YYYY-MM-DD HH:mm:ss Z'
-  }]
-};
-EOF
-
-# Create logs directory
-mkdir -p /opt/pixel-pursuit/backend/logs
-
-# Test the server can start manually first
-echo "Testing server startup..."
-cd /opt/pixel-pursuit/backend
-timeout 10s node dist/server.js || echo "Server test completed"
-
-# Start PM2 with ecosystem file
-echo "Starting PM2..."
-cd /opt/pixel-pursuit/backend
-pm2 start ecosystem.config.js
-
-# Wait a moment and check status
-sleep 5
-pm2 status
-
-# Save PM2 configuration
+pm2 start dist/server.js --name "pixel-pursuit"
 pm2 save
-
-# Setup PM2 to start on system boot
 sudo pm2 startup systemd -u ubuntu --hp /home/ubuntu
 
-echo "Setup complete. PM2 should be running and configured to start on boot." 
+log "SUCCESS" "Deployment completed"
