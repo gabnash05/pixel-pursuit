@@ -14,7 +14,7 @@ router.post('/admin/generate-qr-strings', authenticateToken, requireAdmin, gener
 router.post('/auth/register', register);
 router.post('/auth/login', login);
 router.post('/scan', authenticateToken, submitScan);
-router.get('/leaderboard', getLeaderboard);
+router.get('/leaderboard', authenticateToken, getLeaderboard);
 router.get('/profile', authenticateToken, getProfile);
 router.get('/profile/points', authenticateToken, getPoints);
 

@@ -43,7 +43,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 if (storedAuthData) {
                     const data = JSON.parse(storedAuthData) as AuthData;
                     setAuthData(data);
-                    router.replace('/(tabs)');
                 }
             } catch (error) {
                 console.error('Failed to load auth data', error);

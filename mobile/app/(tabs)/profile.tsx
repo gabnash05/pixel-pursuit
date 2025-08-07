@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
-import { createApiClient } from '../../services/api';
+import { useApiClient } from '@/hooks/useApiClient';
 import { Colors } from '../../constants/colors';
 import ProfileHeader from '../../components/profile/ProfileHeader';
 import StatsCard from '../../components/profile/StatsCard';
@@ -10,8 +10,6 @@ import ScanHistoryItem from '../../components/profile/ScanHistoryItem';
 import ErrorState from '../../components/profile/ErrorState';
 import { truncateUsername } from '../../utils/formatText';
 import { Scan } from '@/types/user-types';
-
-const api = createApiClient();
 
 type UserStats = {
     username: string;
@@ -25,6 +23,7 @@ type UserStats = {
 
 export default function ProfileScreen() {
     const { logout } = useAuth();
+    const api = useApiClient();
     const [stats, setStats] = useState<UserStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);

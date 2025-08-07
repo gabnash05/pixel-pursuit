@@ -25,6 +25,8 @@ export const createApiClient = (token?: string) => {
         data?: any
     ): Promise<T> => {
         try {
+            console.log(method, url, data)
+            console.log(token)
             const response = await api.request<ApiResponse<T>>({
                 method,
                 url,
