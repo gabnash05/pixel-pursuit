@@ -40,7 +40,7 @@ export const getProfile = async (req: Request, res: Response) => {
         }
 
         const totalPoints = user.scans.reduce(
-            (sum: number, scan: Scan) => sum + scan.pointsEarned, 
+            (sum: number, scan: any) => sum + scan.pointsEarned, 
             0
         );
 
