@@ -9,15 +9,9 @@ import StatsCard from '../../components/profile/StatsCard';
 import ScanHistoryItem from '../../components/profile/ScanHistoryItem';
 import ErrorState from '../../components/profile/ErrorState';
 import { truncateUsername } from '../../utils/formatText';
+import { Scan } from '@/types/user-types';
 
 const api = createApiClient();
-
-type ScanHistory = {
-    id: string;
-    pointsEarned: number;
-    timestamp: string;
-    qrCode: string;
-};
 
 type UserStats = {
     username: string;
@@ -26,7 +20,7 @@ type UserStats = {
         totalScans: number;
         averagePoints: number;
     };
-    recentScans: ScanHistory[];
+    recentScans: Scan[];
 };
 
 export default function ProfileScreen() {

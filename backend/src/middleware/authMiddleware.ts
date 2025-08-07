@@ -16,7 +16,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
 
 // New middleware for admin check
 export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user?.isAdmin) {
+    if (!req.user?.isAdmin) { // TODO: does this work?
         return res.status(403).json({ 
             error: 'Forbidden', 
             message: 'Admin access required',

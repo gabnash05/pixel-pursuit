@@ -108,11 +108,7 @@ export const submitScan = async (req: Request, res: Response) => {
                 scanId: newScan.id,
                 pointsEarned: newScan.pointsEarned,
                 timestamp: newScan.timestamp,
-                user: newScan.user,
-                qrCode: {
-                    ...newScan.qrCode,
-                    remainingPoints: calculateReducedPoints(newScan.qrCode.currPoints + pointsToDeduct)
-                }
+                remainingPoints: calculateReducedPoints(newScan.qrCode.currPoints + pointsToDeduct)
             }
         });
 

@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             const response = await authApi.login(email, password);
             const newAuthData = {
                 token: response.data.token,
-                user: { username: response.data.username },
+                user: { username: response.data.user.username },
             };
             await persistAuthData(newAuthData);
             router.replace('/(tabs)');
@@ -85,7 +85,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             const response = await authApi.register(email, password, username);
             const newAuthData = {
                 token: response.data.token,
-                user: { username: response.data.username },
+                user: { username: response.data.user.username },
             };
             await persistAuthData(newAuthData);
             router.replace('/(tabs)');

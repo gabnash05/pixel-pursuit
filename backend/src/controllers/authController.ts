@@ -52,11 +52,11 @@ export const register = async (req: Request, res: Response) => {
         );
 
         return res.status(201).json({
+            message: 'User registered successfully',
             data: {
-                message: 'User registered successfully',
-                userId: user.id,
                 token,
                 user: {
+                    id: user.id,
                     email: user.email,
                     username: user.username
                 }
@@ -138,8 +138,8 @@ export const login = async (req: Request, res: Response) => {
         const { password: _, ...userWithoutPassword } = user;
 
         return res.status(200).json({
+            message: 'Login successful',
             data: {
-                message: 'Login successful',
                 token,
                 user: userWithoutPassword
             }

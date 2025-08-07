@@ -13,9 +13,9 @@ router.post('/admin/create', createAdminAccount);
 router.post('/admin/generate-qr-strings', authenticateToken, requireAdmin, generateQrStrings);
 router.post('/auth/register', register);
 router.post('/auth/login', login);
-router.post('/scans', authenticateToken, submitScan);
+router.post('/scan', authenticateToken, submitScan);
 router.get('/leaderboard', getLeaderboard);
 router.get('/profile', authenticateToken, getProfile);
-router.get('/user/points', authenticateToken, getPoints);
+router.get('/profile/points', authenticateToken, getPoints);
 
 export default router;

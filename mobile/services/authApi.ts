@@ -4,7 +4,11 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 interface AuthData {
     token: string;
-    username: string;
+    user: {
+        id: string,
+        email: string,
+        username: string,
+    }
 }
 
 interface ApiResponse<T> {
