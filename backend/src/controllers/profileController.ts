@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 export const getProfile = async (req: Request, res: Response) => {
     try {
-        if (!req.user) {
+        if (!req.user?.userId) {
             return res.status(401).json({ 
                 error: 'Unauthorized',
                 message: 'User ID not found in request' 
@@ -15,7 +15,7 @@ export const getProfile = async (req: Request, res: Response) => {
 
         const user = await prisma.user.findUnique({
             where: { 
-                id: req.user 
+                id: req.user.userId 
             },
             include: { 
                 scans: {
@@ -77,7 +77,7 @@ export const getProfile = async (req: Request, res: Response) => {
 
 export const getPoints = async (req: Request, res: Response) => {
     try {
-        if (!req.user) {
+        if (!req.user?.userId) {
             return res.status(401).json({ 
                 error: 'Unauthorized',
                 message: 'User ID not found in request' 
@@ -86,7 +86,7 @@ export const getPoints = async (req: Request, res: Response) => {
 
         const user = await prisma.user.findUnique({
             where: { 
-                id: req.user 
+                id: req.user.userId 
             },
             select: {
                 totalPoints: true

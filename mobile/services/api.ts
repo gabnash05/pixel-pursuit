@@ -67,7 +67,7 @@ export const createApiClient = (token?: string) => {
                 recentScans: Scan[];
             }>('GET', '/profile'),
 
-        getPoints: () =>
+        getPoints: () => 
             fetchWithAuth<{ points: number }>('GET', '/profile/points')
     }
 };
