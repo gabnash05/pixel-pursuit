@@ -66,8 +66,8 @@ export const createApiClient = (token?: string) => {
             }>('GET', '/profile'),
 
         getPoints: () =>
-            fetchWithAuth<{ points: number }>('GET', '/profile/points'),
-    };
+            fetchWithAuth<{ points: number }>('GET', '/profile/points')
+    }
 };
 
 export type ApiClient = ReturnType<typeof createApiClient>;

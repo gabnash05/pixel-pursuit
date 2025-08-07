@@ -14,7 +14,7 @@ export const submitScan = async (req: Request, res: Response) => {
             });
         }
 
-        const userId = req.user.userId;
+        const userId = req.user;
 
         const qrCodeRecord = await prisma.qRCodes.findUnique({
             where: { code: qrCode }

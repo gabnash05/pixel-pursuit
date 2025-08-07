@@ -7,8 +7,8 @@ const prisma = new PrismaClient();
 
 export const getLeaderboard = async (req: Request, res: Response<LeaderboardResponse>) => {
     try {
-        // 1. Get current user ID from auth (assuming it's in req.user)
-        const currentUserId = req.user?.userId;
+        // 1. Get current user ID from auth
+        const currentUserId = req.user;
 
         // 2. Fetch all users with their scans
         const users = await prisma.user.findMany({
@@ -44,7 +44,7 @@ export const getLeaderboard = async (req: Request, res: Response<LeaderboardResp
             rank: index + 1,
         }));
 
-        // 6. Find current user's rank
+        // 6. Find current user's rank                  TODO: doesnt work
         const currentUserRank = rankedEntries.find(entry => entry.isCurrentUser)?.rank || 0;
 
         // 7. Get top 10 (or all if less than 10)

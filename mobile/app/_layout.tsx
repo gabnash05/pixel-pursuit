@@ -32,7 +32,7 @@ function AuthLayout() {
     return (
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
             <Stack>
-                {token ? (
+                {!token ? (
                     <Stack.Screen name="(auth)" options={{ headerShown: false }} />
                 ) : (
                     <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

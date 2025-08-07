@@ -11,7 +11,7 @@ import ScanResultModal from '../../components/ui/ScanResultModal';
 import { useApiClient } from '@/hooks/useApiClient';
 
 export default function ScanScreen() {
-    const { token } = useAuth();
+    const { token, logout } = useAuth();
     const api = useApiClient();
     const [permission, requestPermission] = useCameraPermissions();
     const [scanned, setScanned] = useState(false);
@@ -21,19 +21,25 @@ export default function ScanScreen() {
     const [lastScanPoints, setLastScanPoints] = useState(0);
     const [showResultModal, setShowResultModal] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchPoints = async () => {
+        setError(null);
+        try {
+            const res = await api.getPoints();
+            setPoints(res.points);
+        } catch (err: any) {
+            setError(err.message);
+            console.error('Failed to fetch points', err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchPoints = async () => {
-            try {
-                const res = await api.getPoints();
-                setPoints(res.points);
-            } catch (error) {
-                console.error('Failed to fetch points', error);
-            }
-        };
-
-        if (token) fetchPoints();
-    }, [token]);
+        fetchPoints();
+    }, []);
 
     if (!permission) {
         return (
