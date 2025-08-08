@@ -50,8 +50,10 @@ export const getLeaderboard = async (req: Request, res: Response) => {
 
         // 8. Send response
         res.json({
-            entries: topEntries,
-            currentUserRank,
+            data: {
+                entries: topEntries,
+                currentUserRank,
+            }
         });
 
     } catch (error) {

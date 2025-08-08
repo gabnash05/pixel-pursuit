@@ -12,6 +12,7 @@ import { useApiClient } from '@/hooks/useApiClient';
 import { useScan } from '@/contexts/ScanContext';
 
 export default function ScanScreen() {    
+    const { logout } = useAuth();
     const api = useApiClient();
     const { triggerScan } = useScan();
     const [permission, requestPermission] = useCameraPermissions();
@@ -29,7 +30,6 @@ export default function ScanScreen() {
         setError(null);
         try {
             const res = await api.getPoints();
-            console.log(`res ${JSON.stringify(res)}`);
             setPoints(res.points);
         } catch (err: any) {
             setError(err.message);
