@@ -27,7 +27,8 @@ export const getProfile = async (req: Request, res: Response) => {
                     },
                     orderBy: {
                         timestamp: 'desc'
-                    }
+                    },
+                    take: 10
                 } 
             },
         });

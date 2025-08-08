@@ -10,6 +10,7 @@ import ScanHistoryItem from '../../components/profile/ScanHistoryItem';
 import ErrorState from '../../components/profile/ErrorState';
 import { truncateUsername } from '../../utils/formatText';
 import { Scan } from '@/types/user-types';
+import { useScan } from '@/contexts/ScanContext';
 
 type UserStats = {
     username: string;
@@ -24,6 +25,7 @@ type UserStats = {
 export default function ProfileScreen() {
     const { logout } = useAuth();
     const api = useApiClient();
+    const { scanTrigger } = useScan();
     const [stats, setStats] = useState<UserStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -37,6 +39,7 @@ export default function ProfileScreen() {
             setStats(data);
         } catch (err: any) {
             setError(err.message);
+            console.error('Failed to fetch profile', error);
         } finally {
             setIsLoading(false);
         }
@@ -44,7 +47,7 @@ export default function ProfileScreen() {
 
     useEffect(() => {
         fetchProfileData();
-    }, []);
+    }, [scanTrigger]);
 
     const handleLogout = async () => {
         await logout();

@@ -7,6 +7,7 @@ import 'react-native-reanimated';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
+import { ScanProvider } from '@/contexts/ScanContext';
 
 function AuthLayout() {
     const { token, isLoading: authLoading } = useAuth();
@@ -47,9 +48,11 @@ function AuthLayout() {
 export default function RootLayout() {
     return (
         <AuthProvider>
-            <ErrorBoundary>
-                <AuthLayout />
-            </ErrorBoundary>
+            <ScanProvider>
+                <ErrorBoundary>
+                    <AuthLayout />
+                </ErrorBoundary>
+            </ScanProvider>
         </AuthProvider>
     );
 }

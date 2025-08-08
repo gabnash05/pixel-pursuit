@@ -9,10 +9,11 @@ import * as Haptics from 'expo-haptics';
 import PointsDisplay from '../../components/ui/PointsDisplay';
 import ScanResultModal from '../../components/ui/ScanResultModal';
 import { useApiClient } from '@/hooks/useApiClient';
+import { useScan } from '@/contexts/ScanContext';
 
-export default function ScanScreen() {
-    const { token, logout } = useAuth();
+export default function ScanScreen() {    
     const api = useApiClient();
+    const { triggerScan } = useScan();
     const [permission, requestPermission] = useCameraPermissions();
     const [scanned, setScanned] = useState(false);
     const [cameraType, setCameraType] = useState<CameraType>('back');
@@ -28,10 +29,11 @@ export default function ScanScreen() {
         setError(null);
         try {
             const res = await api.getPoints();
+            console.log(`res ${JSON.stringify(res)}`);
             setPoints(res.points);
         } catch (err: any) {
             setError(err.message);
-            console.error('Failed to fetch points', err);
+            console.error('Failed to fetch points', error);
         } finally {
             setIsLoading(false);
         }
@@ -39,7 +41,7 @@ export default function ScanScreen() {
 
     useEffect(() => {
         fetchPoints();
-    }, []);
+    }, [triggerScan]);
 
     if (!permission) {
         return (
@@ -79,6 +81,7 @@ export default function ScanScreen() {
             setShowResultModal(true);
 
             setTimeout(() => setScanned(false), 2000);
+            triggerScan();
         } catch (error: any) {
             console.error('Scan error:', error);
             Alert.alert('Error', error.message || 'Failed to process QR code');
@@ -90,6 +93,7 @@ export default function ScanScreen() {
 
     const toggleCameraType = () => {
         setCameraType(current => (current === 'back' ? 'front' : 'back'));
+        triggerScan();
     };
 
     const toggleTorch = () => {

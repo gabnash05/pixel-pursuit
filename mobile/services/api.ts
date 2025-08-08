@@ -55,20 +55,10 @@ export const createApiClient = (token?: string) => {
             fetchWithAuth<LeaderboardResponse>('GET', `/leaderboard`),
 
         getProfile: () =>
-            fetchWithAuth<{
-                id: string;
-                username: string;
-                email: string;
-                stats: {
-                    totalPoints: number;
-                    totalScans: number;
-                    averagePoints: number;
-                };
-                recentScans: Scan[];
-            }>('GET', '/profile'),
+            fetchWithAuth('GET', '/profile'),
 
         getPoints: () => 
-            fetchWithAuth<{ points: number }>('GET', '/profile/points')
+            fetchWithAuth('GET', '/profile/points')
     }
 };
 

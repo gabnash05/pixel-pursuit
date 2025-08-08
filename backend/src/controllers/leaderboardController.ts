@@ -1,14 +1,12 @@
 import type { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import type { LeaderboardResponse } from '../types/leaderboard/leaderboardTypes.js';
-import type { User } from '../types/users/userTypes.js';
 
 const prisma = new PrismaClient();
 
-export const getLeaderboard = async (req: Request, res: Response<LeaderboardResponse>) => {
+export const getLeaderboard = async (req: Request, res: Response) => {
     try {
         // 1. Get current user ID from auth
-        const currentUserId = req.user;
+        const currentUserId = req.user?.userId;
 
         // 2. Fetch all users with their scans
         const users = await prisma.user.findMany({
@@ -44,7 +42,7 @@ export const getLeaderboard = async (req: Request, res: Response<LeaderboardResp
             rank: index + 1,
         }));
 
-        // 6. Find current user's rank                  TODO: doesnt work
+        // 6. Find current user's rank
         const currentUserRank = rankedEntries.find(entry => entry.isCurrentUser)?.rank || 0;
 
         // 7. Get top 10 (or all if less than 10)
@@ -57,10 +55,15 @@ export const getLeaderboard = async (req: Request, res: Response<LeaderboardResp
         });
 
     } catch (error) {
-        console.error('Error fetching leaderboard:', error);
-        res.status(500).json({
-            entries: [],
-            currentUserRank: 0,
+        console.error('Leaderboard error:', error);
+        
+        const status = error instanceof Error && 
+                     error.message.includes('prisma') ? 503 : 500;
+        
+        res.status(status).json({
+            success: false,
+            error: 'Failed to load leaderboard',
+            details: error instanceof Error ? error.message : 'Unknown error'
         });
     }
 };

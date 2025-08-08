@@ -8,6 +8,7 @@ import LoadingSkeleton from '../../components/leaderboard/LoadingSkeleton';
 import ErrorState from '../../components/leaderboard/ErrorState';
 import { Colors } from '../../constants/colors';
 import { useApiClient } from '@/hooks/useApiClient';
+import { useScan } from '@/contexts/ScanContext';
 
 type LeaderboardEntry = {
     id: string;
@@ -19,6 +20,7 @@ type LeaderboardEntry = {
 
 export default function LeaderboardScreen() {
     const api = useApiClient();
+    const { scanTrigger } = useScan();
     const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -33,6 +35,7 @@ export default function LeaderboardScreen() {
             setCurrentUserRank(data.currentUserRank);
         } catch (err: any) {
             setError(err.message);
+            console.error('Failed to fetch leaderboard', error);
         } finally {
             setIsLoading(false);
             setRefreshing(false);
@@ -41,7 +44,7 @@ export default function LeaderboardScreen() {
 
     useEffect(() => {
         fetchLeaderboard();
-    }, []);
+    }, [scanTrigger]);
 
     const onRefresh = () => {
         setRefreshing(true);
