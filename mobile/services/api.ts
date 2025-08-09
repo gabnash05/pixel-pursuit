@@ -25,7 +25,6 @@ export const createApiClient = (token?: string) => {
         data?: any
     ): Promise<T> => {
         try {
-            console.log(method, url, data)
             console.log(token)
             const response = await api.request<ApiResponse<T>>({
                 method,
@@ -55,10 +54,20 @@ export const createApiClient = (token?: string) => {
             fetchWithAuth<LeaderboardResponse>('GET', `/leaderboard`),
 
         getProfile: () =>
-            fetchWithAuth('GET', '/profile'),
+            fetchWithAuth<{
+                id: string;
+                username: string;
+                email: string;
+                stats: {
+                    totalPoints: number;
+                    totalScans: number;
+                    averagePoints: number;
+                };
+                recentScans: Scan[];
+            }>('GET', '/profile'),
 
         getPoints: () => 
-            fetchWithAuth('GET', '/profile/points')
+            fetchWithAuth<{ points: number }>('GET', '/profile/points')
     }
 };
 

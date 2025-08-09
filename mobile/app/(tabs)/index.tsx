@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
+import { CameraView, CameraType, useCameraPermissions, Camera } from 'expo-camera';
 import { useAuth } from '../../contexts/AuthContext';
 import { FontAwesome } from '@expo/vector-icons';
 import { Colors } from '../../constants/colors';
@@ -18,13 +18,23 @@ export default function ScanScreen() {
     const [permission, requestPermission] = useCameraPermissions();
     const [scanned, setScanned] = useState(false);
     const [cameraType, setCameraType] = useState<CameraType>('back');
-    const [torchEnabled, setTorchEnabled] = useState(false);
     const [points, setPoints] = useState(0);
     const [lastScanPoints, setLastScanPoints] = useState(0);
     const [showResultModal, setShowResultModal] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const getCameraPermission = async () => {
+            const { status } = await Camera.requestCameraPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('Permission required', 'Camera access is needed to scan QR codes');
+            }
+        };
+        
+        getCameraPermission();
+    }, []);
 
     const fetchPoints = async () => {
         setError(null);
@@ -46,7 +56,7 @@ export default function ScanScreen() {
     if (!permission) {
         return (
             <View className="flex-1 items-center justify-center bg-gray-900">
-                <Text className="text-white">No access to camera</Text>
+                <Text className="text-white">Requesting camera access...</Text>
             </View>
         );
     }
@@ -93,11 +103,6 @@ export default function ScanScreen() {
 
     const toggleCameraType = () => {
         setCameraType(current => (current === 'back' ? 'front' : 'back'));
-        triggerScan();
-    };
-
-    const toggleTorch = () => {
-        setTorchEnabled(current => !current);
     };
 
     return (
@@ -106,15 +111,14 @@ export default function ScanScreen() {
 
             <View className="flex-1">
                 <CameraView
-                    className="absolute top-0 bottom-0 left-0 right-0"
+                    style={{ flex: 1 }}
                     facing={cameraType}
                     onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
-                    barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
-                    enableTorch={torchEnabled}
+                    onMountError={(error) => console.error('Camera error:', error)}
                 />
 
                 {/* Scanner Frame */}
-                <View className="absolute inset-0 items-center justify-center">
+                <View className="absolute inset-0 items-center justify-center z-10">
                     <View className="w-64 h-64 border-4 border-indigo-400 rounded-lg relative">
                         <View className="absolute -top-1 -left-1 w-12 h-12 border-l-4 border-t-4 border-indigo-400" />
                         <View className="absolute -top-1 -right-1 w-12 h-12 border-r-4 border-t-4 border-indigo-400" />
@@ -124,29 +128,17 @@ export default function ScanScreen() {
                 </View>
 
                 {/* Camera Controls */}
-                <View className="absolute bottom-10 left-0 right-0 flex-row justify-center space-x-12 gap-8">
+                <View className="absolute bottom-10 left-0 right-0 flex-row justify-center space-x-12 gap-8 z-10">
                     <TouchableOpacity
                         className="bg-gray-800 bg-opacity-70 min-w-20 min-h-20 items-center justify-center rounded-3xl p-5"
                         onPress={toggleCameraType}
                     >
                         <FontAwesome name="refresh" size={24} color="white" />
                     </TouchableOpacity>
-
-                    <TouchableOpacity
-                        className="bg-gray-800 bg-opacity-70 min-w-20 min-h-20 items-center justify-center rounded-3xl p-5"
-                        onPress={toggleTorch}
-                    >
-                        <FontAwesome
-                            name="flash"
-                            size={24}
-                            color={torchEnabled ? Colors.primary : 'white'}
-                        />
-                    </TouchableOpacity>
                 </View>
 
-                {/* Processing Overlay */}
                 {isProcessing && (
-                    <View className="absolute inset-0 items-center justify-center bg-black bg-opacity-50">
+                    <View className="absolute inset-0 items-center justify-center bg-black bg-opacity-50 z-20">
                         <View className="bg-white p-6 rounded-lg">
                             <Text className="text-lg font-medium">Processing QR Code...</Text>
                         </View>
